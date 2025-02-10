@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import axios from 'axios'
+import TaskProgress from './TaskProgress'
 
 type JobSubmission = {
   script: string
@@ -9,21 +10,35 @@ type JobSubmission = {
 export default function SubmitJob() {
   const [script, setScript] = useState<string>('print("Training model...")')
   const [bounty, setBounty] = useState<number>(50000)
+  const [activeJobId, setActiveJobId] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async (): Promise<void> => {
+    if (!script.trim()) {
+      alert('Please enter a valid training script')
+      return
+    }
+
+    setIsSubmitting(true)
     try {
       const response = await axios.post<{ job_id: string }>(
         'http://localhost:5000/submit_job',
-        { script, bounty } as JobSubmission
+        { script, bounty }
       )
-      alert(`Job submitted! ID: ${response.data.job_id}`)
+      setActiveJobId(response.data.job_id)
     } catch (error) {
+      let errorMessage = 'Failed to submit job'
       if (axios.isAxiosError(error)) {
-        alert(`Submission failed: ${error.message}`)
-      } else {
-        alert('Unknown error occurred')
+        errorMessage = error.response?.data?.error || error.message
       }
+      alert(errorMessage)
+    } finally {
+      setIsSubmitting(false)
     }
+  }
+
+  if (activeJobId) {
+    return <TaskProgress jobId={activeJobId} />
   }
 
   return (
@@ -34,7 +49,7 @@ export default function SubmitJob() {
         <input
           type="number"
           value={bounty}
-          onChange={(e) => setBounty(Number(e.target.value))}
+          onChange={(e) => setBounty(Math.max(0, Number(e.target.value)))}
           className="w-full p-2 border rounded"
           min="0"
         />
@@ -46,13 +61,17 @@ export default function SubmitJob() {
           onChange={(e) => setScript(e.target.value)}
           className="w-full h-48 p-2 border rounded font-mono text-sm"
           placeholder="Paste your Python training script..."
+          spellCheck="false"
         />
       </div>
       <button
         onClick={handleSubmit}
-        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+        disabled={isSubmitting}
+        className={`bg-blue-500 text-white px-4 py-2 rounded transition-colors ${
+          isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600'
+        }`}
       >
-        Submit Job
+        {isSubmitting ? 'Submitting...' : 'Submit Job'}
       </button>
     </div>
   )
