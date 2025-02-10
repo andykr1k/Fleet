@@ -56,7 +56,7 @@ pip install -r requirements.txt
 
 #### Start services
 ```bash
-redis-server &
+redis-server
 python app.py
 celery -A tasks.celery worker --pool=solo --loglevel=info
 ```
