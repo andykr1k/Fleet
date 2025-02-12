@@ -2,6 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+/* index.css */
+@supports (padding: max(0px)) {
+  body {
+    padding: 
+      env(safe-area-inset-top) 
+      env(safe-area-inset-right) 
+      env(safe-area-inset-bottom) 
+      env(safe-area-inset-left);
+  }
+}
+
+/* Ensure background covers entire screen */
+html, body {
+  background: #000;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+}
+
 @keyframes float {
   0%, 100% { transform: translate(0, 0) rotate(0deg); }
   25% { transform: translate(10px, -10px) rotate(3deg); }
