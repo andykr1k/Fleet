@@ -1,109 +1,111 @@
-import { useState, useEffect } from 'react'
-import axios from 'axios'
+// components/TaskProgress.tsx
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+
+type TaskProgressProps = {
+  jobId: string;
+  onClose: () => void;
+};
 
 type Task = {
-  task_id: string
-  status: 'pending' | 'running' | 'completed' | 'failed'
-  output?: string
-}
+  task_id: string;
+  status: 'pending' | 'running' | 'completed' | 'failed';
+  output?: string;
+};
 
-export default function TaskProgress({ jobId }: { jobId: string }) {
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [error, setError] = useState<string>('')
-  const [isLoading, setIsLoading] = useState(true)
+export default function TaskProgress({ jobId, onClose }: TaskProgressProps) {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const abortController = new AbortController()
+    const abortController = new AbortController();
 
     const fetchStatus = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/job_status/${jobId}`, {
+        const response = await axios.get(`http://localhost:5001/job_status/${jobId}`, {
           signal: abortController.signal
-        })
+        });
 
-        if (!response.data?.tasks) {
-          throw new Error('Invalid response format')
-        }
-
-        const rawTasks = response.data.tasks
-        const validTasks = rawTasks.filter((t: any) =>
+        const validTasks = (response.data?.tasks || []).filter((t: any) =>
           t.task_id && ['pending', 'running', 'completed', 'failed'].includes(t.status)
-        )
+        );
 
-        const sortedTasks = validTasks.sort((a: Task, b: Task) => {
-          try {
-            return parseInt(a.task_id.split('-')[1]) - parseInt(b.task_id.split('-')[1])
-          } catch {
-            return a.task_id.localeCompare(b.task_id)
-          }
-        })
-
-        setTasks(sortedTasks)
-        setError('')
+        setTasks(validTasks.sort((a: Task, b: Task) => 
+          a.task_id.localeCompare(b.task_id)
+        ));
+        setError('');
       } catch (err) {
         if (!abortController.signal.aborted) {
           setError(axios.isAxiosError(err)
-            ? `Failed to fetch status: ${err.message}`
-            : 'Unknown error occurred')
+            ? `Error: ${err.message}`
+            : 'Failed to load tasks');
         }
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    // Initial fetch
-    fetchStatus()
-
-    // Set up polling
-    const interval = setInterval(fetchStatus, 2000)
+    fetchStatus();
+    const interval = setInterval(fetchStatus, 2000);
+    
     return () => {
-      abortController.abort()
-      clearInterval(interval)
-    }
-  }, [jobId])
-
-  const statusColors = {
-    pending: 'bg-yellow-100 text-yellow-800',
-    running: 'bg-blue-100 text-blue-800',
-    completed: 'bg-green-100 text-green-800',
-    failed: 'bg-red-100 text-red-800'
-  }
+      abortController.abort();
+      clearInterval(interval);
+    };
+  }, [jobId]);
 
   return (
-    <div className="mt-4 space-y-2">
-      <h2 className="text-xl font-semibold mb-4">
-        Job Progress: <code className="font-mono">{jobId}</code>
-      </h2>
+    <div className="h-full flex flex-col">
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-xl font-semibold">Job Details: {jobId}</h3>
+        <button
+          onClick={onClose}
+          className="p-2 hover:bg-white/10 rounded-lg"
+        >
+          ✕
+        </button>
+      </div>
 
       {isLoading ? (
-        <div className="text-gray-500">Loading task statuses...</div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="animate-pulse">Loading tasks...</div>
+        </div>
       ) : error ? (
-        <div className="text-red-500 p-3 bg-red-50 rounded">{error}</div>
+        <div className="p-4 bg-red-500/10 text-red-300 rounded-lg">{error}</div>
       ) : tasks.length === 0 ? (
-        <div className="text-gray-500">No tasks found for this job</div>
+        <div className="flex-1 flex items-center justify-center text-gray-400">
+          No tasks found for this job
+        </div>
       ) : (
-        tasks.map(task => (
-          <div key={task.task_id} className="p-3 border rounded bg-white shadow-sm">
-            <div className="flex justify-between items-center">
-              <span className="font-mono text-sm text-gray-600">
-                {task.task_id}
-              </span>
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[task.status]}`}>
-                {task.status.toUpperCase()}
-              </span>
-            </div>
-
-            {task.output && (
-              <div className="mt-4 p-3 bg-gray-50 rounded border text-sm">
-                <div className="text-gray-500 text-xs mb-1">Output:</div>
-                <pre className="whitespace-pre-wrap break-words font-mono">
-                  {task.output}
-                </pre>
+        <div className="flex-1 overflow-y-auto pr-4">
+          {tasks.map((task) => (
+            <div
+              key={task.task_id}
+              className="p-4 mb-4 bg-white/5 rounded-lg border border-white/10"
+            >
+              <div className="flex justify-between items-center mb-2">
+                <span className="font-mono text-sm">{task.task_id}</span>
+                <span className={`px-2 py-1 rounded text-xs ${
+                  {
+                    pending: 'bg-yellow-500/20 text-yellow-300',
+                    running: 'bg-blue-500/20 text-blue-300',
+                    completed: 'bg-green-500/20 text-green-300',
+                    failed: 'bg-red-500/20 text-red-300'
+                  }[task.status]
+                }`}>
+                  {task.status}
+                </span>
               </div>
-            )}
-          </div>
-        ))
+              {task.output && (
+                <div className="mt-2 p-3 bg-black/20 rounded text-sm">
+                  <pre className="whitespace-pre-wrap break-words">{task.output}</pre>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       )}
     </div>
-  )
+  );
 }

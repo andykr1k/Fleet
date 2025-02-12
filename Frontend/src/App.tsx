@@ -1,9 +1,57 @@
-import SubmitJob from './components/SubmitJob'
+// App.tsx
+import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
+import { Background } from './layouts';
+import { Settings, Landing, Jobs, Account, Dashboard, NotFound, Authentication } from './pages';
 
-export default function App() {
-  return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <SubmitJob />
-    </div>
-  )
+// Layout route wrapper
+const LayoutRoute = () => (
+  <Background>
+    <Outlet />
+  </Background>
+);
+
+const ErrorRoute = () => (
+  <Background>
+    <NotFound />
+  </Background>
+);
+
+// Router configuration
+const router = createBrowserRouter([
+  {
+    element: <LayoutRoute />,
+    errorElement: <ErrorRoute />,
+    children: [
+      {
+        path: '/',
+        element: <Landing />
+      },
+      {
+        path: '/authentication',
+        element: <Authentication />
+      },
+      {
+        path: '/dashboard',
+        element: <Dashboard />
+      },
+      {
+        path: '/jobs',
+        element: <Jobs />
+      },
+      {
+        path: '/account',
+        element: <Account />
+      },
+      {
+        path: '/settings',
+        element: <Settings />
+      }
+    ]
+  }
+]);
+
+function App() {
+  return <RouterProvider router={router} />;
 }
+
+export default App;
