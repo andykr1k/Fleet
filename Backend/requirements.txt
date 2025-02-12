@@ -1,0 +1,5 @@
+flask
+redis
+celery
+python-dotenv
+Flask-Cors
