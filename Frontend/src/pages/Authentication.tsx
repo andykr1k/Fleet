@@ -22,7 +22,7 @@ export default function Authentication() {
           <p className="text-gray-400 text-sm">Access your account and start training AI models.</p>
         </div>
 
-        <form className="space-y-6">
+        <form className="space-y-6" onSubmit={handleSignIn}>
           <div>
             <label className="block text-gray-300 text-sm mb-2">Email</label>
             <input
@@ -40,7 +40,7 @@ export default function Authentication() {
             />
           </div>
 
-          <button onClick={handleSignIn} className="w-full px-4 py-3 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 hover:from-blue-400 hover:to-purple-500 transition-all duration-200 font-medium">
+          <button type="submit" className="w-full px-4 py-3 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 hover:from-blue-400 hover:to-purple-500 transition-all duration-200 font-medium">
             Sign In
           </button>
         </form>
