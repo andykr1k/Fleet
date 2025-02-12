@@ -29,7 +29,7 @@ export default function Header({ title }: HeaderProps) {
       </div>
 
       <div className="flex items-center space-x-6">
-        <nav className="hidden md:flex space-x-6">
+        <nav className="flex space-x-6">
           {navigation.map((item) =>
             location.pathname !== item.path ? (
               <Link
