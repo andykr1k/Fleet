@@ -35,7 +35,7 @@ export default function Header({ title }: HeaderProps) {
               <Link
                 key={item.path}
                 to={item.path}
-                className="text-gray-300 hover:text-white transition"
+                className="text-gray-300 hover:text-white transition font-medium"
               >
                 {item.name}
               </Link>

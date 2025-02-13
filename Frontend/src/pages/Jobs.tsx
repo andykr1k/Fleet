@@ -6,7 +6,7 @@ import TaskProgress from "../components/TaskProgress";
 
 type Job = {
   id: string;
-  status: "pending" | "running" | "completed" | "failed";
+  overall_status: "pending" | "running" | "completed" | "failed";
 };
 
 export default function Jobs() {
@@ -14,7 +14,7 @@ export default function Jobs() {
   const [selectedJob, setSelectedJob] = useState<string | null>(null);
 
   const handleJobSubmit = (jobId: string) => {
-    setJobs((jobs) => [...jobs, { id: jobId, status: "pending" }]);
+    setJobs((jobs) => [...jobs, { id: jobId, overall_status: "pending" }]);
   };
 
   return (
@@ -54,10 +54,10 @@ export default function Jobs() {
                             running: "bg-blue-500/20 text-blue-300",
                             completed: "bg-green-500/20 text-green-300",
                             failed: "bg-red-500/20 text-red-300",
-                          }[job.status]
+                          }[job.overall_status]
                         }`}
                       >
-                        {job.status}
+                        {job.overall_status}
                       </span>
                     </div>
                     <span className="text-gray-400 text-sm">
